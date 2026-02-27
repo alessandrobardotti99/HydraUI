@@ -48,6 +48,12 @@ const componentMap: Record<string, ReturnType<typeof resolveComponent>> = {
   'stepper': resolveComponent('PreviewStepper'),
   'number-input': resolveComponent('PreviewNumberInput'),
   'rating': resolveComponent('PreviewRating'),
+  'pricing-table': resolveComponent('PreviewPricingTable'),
+  'stat-card': resolveComponent('PreviewStatCard'),
+  'kanban-board': resolveComponent('PreviewKanbanBoard'),
+  'chat-bubble': resolveComponent('PreviewChatBubble'),
+  'empty-state': resolveComponent('PreviewEmptyState'),
+  'notification-feed': resolveComponent('PreviewNotificationFeed'),
 }
 
 const activeComponent = computed(() => componentMap[props.slug])

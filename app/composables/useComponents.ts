@@ -5829,6 +5829,581 @@ export function CommandPalette({ open, onClose, groups }: CommandPaletteProps) {
 }`,
     },
   },
+
+  // ─── COMPONENTI UNICI ────────────────────────────────
+
+  {
+    name: 'Pricing Table',
+    slug: 'pricing-table',
+    category: 'Layout',
+    description: 'Tabella prezzi con toggle mensile/annuale e piani a confronto.',
+    platforms: ['HTML', 'Vue', 'React'],
+    props: [
+      { name: 'plans', type: 'Plan[]', default: '[]', description: 'Array di piani con nome, prezzo, features' },
+      { name: 'annual', type: 'boolean', default: 'false', description: 'Mostra prezzi annuali' },
+    ],
+    code: {
+      html: `<style>
+.pricing { display: flex; gap: 1rem; font-family: system-ui; }
+.pricing-toggle { display: flex; align-items: center; gap: 0.75rem; justify-content: center; margin-bottom: 1.5rem; font-size: 0.75rem; }
+.pricing-card { flex: 1; border: 1px solid #E0E2E4; border-radius: 0.75rem; padding: 1.5rem; background: #fff; }
+.pricing-card.highlight { border-color: #1A1F27; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.pricing-name { font-size: 0.875rem; font-weight: 600; color: #1A1F27; }
+.pricing-price { font-size: 1.75rem; font-weight: 700; color: #1A1F27; margin: 0.5rem 0 1rem; }
+.pricing-price span { font-size: 0.7rem; color: #9CA3AF; }
+.pricing-cta { width: 100%; padding: 0.5rem; border: none; border-radius: 0.5rem; font-size: 0.75rem; font-weight: 500; cursor: pointer; margin-bottom: 1rem; }
+.pricing-cta.primary { background: #1A1F27; color: #fff; }
+.pricing-cta.secondary { background: #F2F3EF; color: #1A1F27; }
+.pricing-features { list-style: none; padding: 0; margin: 0; }
+.pricing-features li { font-size: 0.75rem; color: #5A6170; padding: 0.25rem 0; }
+</style>
+
+<div class="pricing-toggle">
+  <span>Mensile</span>
+  <input type="checkbox" id="annual" />
+  <label for="annual">Annuale</label>
+</div>
+<div class="pricing">
+  <div class="pricing-card">
+    <div class="pricing-name">Starter</div>
+    <div class="pricing-price">&euro;0 <span>/mese</span></div>
+    <button class="pricing-cta secondary">Inizia gratis</button>
+    <ul class="pricing-features">
+      <li>&#10003; 5 progetti</li>
+      <li>&#10003; 1 GB storage</li>
+    </ul>
+  </div>
+  <div class="pricing-card highlight">
+    <div class="pricing-name">Pro</div>
+    <div class="pricing-price">&euro;19 <span>/mese</span></div>
+    <button class="pricing-cta primary">Scegli Pro</button>
+    <ul class="pricing-features">
+      <li>&#10003; Progetti illimitati</li>
+      <li>&#10003; 50 GB storage</li>
+      <li>&#10003; Supporto prioritario</li>
+    </ul>
+  </div>
+  <div class="pricing-card">
+    <div class="pricing-name">Team</div>
+    <div class="pricing-price">&euro;49 <span>/mese</span></div>
+    <button class="pricing-cta secondary">Contattaci</button>
+    <ul class="pricing-features">
+      <li>&#10003; Tutto di Pro</li>
+      <li>&#10003; SSO & SAML</li>
+      <li>&#10003; SLA 99.9%</li>
+    </ul>
+  </div>
+</div>`,
+      vue: `<script setup lang="ts">
+interface Plan {
+  name: string
+  monthly: number
+  yearly: number
+  cta: string
+  features: string[]
+  highlight?: boolean
+}
+
+const annual = ref(false)
+const plans: Plan[] = [
+  { name: 'Starter', monthly: 0, yearly: 0, cta: 'Inizia gratis', features: ['5 progetti', '1 GB storage', 'Community support'] },
+  { name: 'Pro', monthly: 19, yearly: 190, cta: 'Scegli Pro', features: ['Progetti illimitati', '50 GB storage', 'Supporto prioritario', 'API access'], highlight: true },
+  { name: 'Team', monthly: 49, yearly: 490, cta: 'Contattaci', features: ['Tutto di Pro', '500 GB storage', 'SSO & SAML', 'SLA 99.9%'] },
+]
+<\/script>
+
+<template>
+  <div>
+    <div class="flex items-center justify-center gap-3 mb-6">
+      <span :class="!annual ? 'font-semibold' : 'text-gray-400'" class="text-sm">Mensile</span>
+      <button @click="annual = !annual" class="relative w-10 h-5 rounded-full" :class="annual ? 'bg-gray-900' : 'bg-gray-300'">
+        <span class="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform" :class="annual ? 'translate-x-5' : ''" />
+      </button>
+      <span :class="annual ? 'font-semibold' : 'text-gray-400'" class="text-sm">Annuale</span>
+    </div>
+    <div class="grid grid-cols-3 gap-4">
+      <div v-for="plan in plans" :key="plan.name" class="border rounded-xl p-5" :class="plan.highlight ? 'border-gray-900 shadow-md' : 'border-gray-200'">
+        <h3 class="font-semibold text-sm">{{ plan.name }}</h3>
+        <div class="text-2xl font-bold mt-2 mb-4">&euro;{{ annual ? plan.yearly : plan.monthly }}<span class="text-xs text-gray-400">{{ annual ? '/anno' : '/mese' }}</span></div>
+        <button class="w-full py-2 text-sm font-medium rounded-lg" :class="plan.highlight ? 'bg-gray-900 text-white' : 'bg-gray-100'">{{ plan.cta }}</button>
+        <ul class="mt-4 space-y-1.5">
+          <li v-for="f in plan.features" :key="f" class="text-xs text-gray-500">&#10003; {{ f }}</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</template>`,
+      react: `import { useState } from 'react'
+
+const plans = [
+  { name: 'Starter', monthly: 0, yearly: 0, cta: 'Inizia gratis', features: ['5 progetti', '1 GB storage'], highlight: false },
+  { name: 'Pro', monthly: 19, yearly: 190, cta: 'Scegli Pro', features: ['Progetti illimitati', '50 GB storage', 'Supporto prioritario'], highlight: true },
+  { name: 'Team', monthly: 49, yearly: 490, cta: 'Contattaci', features: ['Tutto di Pro', 'SSO & SAML', 'SLA 99.9%'], highlight: false },
+]
+
+export function PricingTable() {
+  const [annual, setAnnual] = useState(false)
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '0.75rem', marginBottom: '1.5rem', alignItems: 'center' }}>
+        <span style={{ fontSize: '0.875rem', fontWeight: annual ? 400 : 600 }}>Mensile</span>
+        <button onClick={() => setAnnual(!annual)} style={{ width: 40, height: 20, borderRadius: 10, background: annual ? '#1A1F27' : '#ccc', border: 'none', position: 'relative', cursor: 'pointer' }}>
+          <span style={{ position: 'absolute', top: 2, left: annual ? 22 : 2, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
+        </button>
+        <span style={{ fontSize: '0.875rem', fontWeight: annual ? 600 : 400 }}>Annuale</span>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
+        {plans.map(plan => (
+          <div key={plan.name} style={{ border: plan.highlight ? '2px solid #1A1F27' : '1px solid #E0E2E4', borderRadius: 12, padding: '1.25rem' }}>
+            <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>{plan.name}</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 700, margin: '0.5rem 0 1rem' }}>&euro;{annual ? plan.yearly : plan.monthly}<span style={{ fontSize: '0.7rem', color: '#9CA3AF' }}>{annual ? '/anno' : '/mese'}</span></div>
+            <button style={{ width: '100%', padding: '0.5rem', borderRadius: 8, border: 'none', fontWeight: 500, fontSize: '0.75rem', cursor: 'pointer', background: plan.highlight ? '#1A1F27' : '#F2F3EF', color: plan.highlight ? '#fff' : '#1A1F27' }}>{plan.cta}</button>
+            <ul style={{ marginTop: '1rem', listStyle: 'none', padding: 0 }}>
+              {plan.features.map(f => <li key={f} style={{ fontSize: '0.75rem', color: '#5A6170', padding: '0.2rem 0' }}>&#10003; {f}</li>)}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}`,
+    },
+  },
+  {
+    name: 'Stat Card',
+    slug: 'stat-card',
+    category: 'Dati',
+    description: 'Card statistica con valore, trend e mini sparkline.',
+    platforms: ['HTML', 'Vue', 'React'],
+    props: [
+      { name: 'label', type: 'string', default: "''", description: 'Etichetta della metrica' },
+      { name: 'value', type: 'string', default: "''", description: 'Valore numerico da mostrare' },
+      { name: 'change', type: 'string', default: "''", description: 'Variazione percentuale' },
+      { name: 'trend', type: "'up' | 'down'", default: "'up'", description: 'Direzione del trend' },
+    ],
+    code: {
+      html: `<style>
+.stat-card { border: 1px solid #E0E2E4; border-radius: 0.75rem; padding: 1rem; background: #fff; display: inline-block; min-width: 160px; }
+.stat-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em; color: #5A6170; }
+.stat-value { font-size: 1.5rem; font-weight: 700; color: #1A1F27; margin-top: 0.25rem; }
+.stat-change { font-size: 0.65rem; font-weight: 600; padding: 0.15rem 0.4rem; border-radius: 0.25rem; display: inline-block; margin-top: 0.5rem; }
+.stat-change.up { color: #15803d; background: #f0fdf4; }
+.stat-change.down { color: #dc2626; background: #fef2f2; }
+</style>
+
+<div class="stat-card">
+  <div class="stat-label">Utenti</div>
+  <div class="stat-value">12.4k</div>
+  <span class="stat-change up">&#9650; +12.3%</span>
+</div>`,
+      vue: `<script setup lang="ts">
+defineProps<{
+  label: string
+  value: string
+  change: string
+  trend?: 'up' | 'down'
+}>()
+<\/script>
+
+<template>
+  <div class="border border-gray-200 rounded-xl p-4 bg-white">
+    <span class="text-[10px] uppercase tracking-wider text-gray-500">{{ label }}</span>
+    <div class="text-2xl font-bold text-gray-900 mt-1">{{ value }}</div>
+    <span class="text-xs font-semibold px-1.5 py-0.5 rounded mt-2 inline-block" :class="trend === 'down' ? 'text-red-600 bg-red-50' : 'text-green-700 bg-green-50'">
+      {{ change }}
+    </span>
+  </div>
+</template>`,
+      react: `interface StatCardProps {
+  label: string
+  value: string
+  change: string
+  trend?: 'up' | 'down'
+}
+
+export function StatCard({ label, value, change, trend = 'up' }: StatCardProps) {
+  return (
+    <div style={{ border: '1px solid #E0E2E4', borderRadius: 12, padding: '1rem', background: '#fff' }}>
+      <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#5A6170' }}>{label}</div>
+      <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#1A1F27', marginTop: '0.25rem' }}>{value}</div>
+      <span style={{ fontSize: '0.65rem', fontWeight: 600, padding: '0.15rem 0.4rem', borderRadius: 4, background: trend === 'down' ? '#fef2f2' : '#f0fdf4', color: trend === 'down' ? '#dc2626' : '#15803d', display: 'inline-block', marginTop: '0.5rem' }}>{change}</span>
+    </div>
+  )
+}`,
+    },
+  },
+  {
+    name: 'Kanban Board',
+    slug: 'kanban-board',
+    category: 'Layout',
+    description: 'Board Kanban con colonne e card organizzabili.',
+    platforms: ['HTML', 'Vue', 'React'],
+    props: [
+      { name: 'columns', type: 'Column[]', default: '[]', description: 'Array di colonne con titolo e card' },
+    ],
+    code: {
+      html: `<style>
+.kanban { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; font-family: system-ui; }
+.kanban-col-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
+.kanban-dot { width: 8px; height: 8px; border-radius: 50%; }
+.kanban-title { font-size: 0.7rem; font-weight: 600; color: #1A1F27; }
+.kanban-card { background: #fff; border: 1px solid #E0E2E4; border-radius: 0.5rem; padding: 0.75rem; margin-bottom: 0.5rem; cursor: grab; }
+.kanban-card:hover { box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+.kanban-card p { font-size: 0.75rem; color: #1A1F27; margin: 0 0 0.5rem; }
+.kanban-tag { font-size: 0.6rem; font-weight: 500; padding: 0.1rem 0.4rem; border-radius: 0.25rem; }
+</style>
+
+<div class="kanban">
+  <div>
+    <div class="kanban-col-header">
+      <div class="kanban-dot" style="background:#9CA3AF"></div>
+      <span class="kanban-title">Da fare</span>
+    </div>
+    <div class="kanban-card">
+      <p>Redesign homepage</p>
+      <span class="kanban-tag" style="background:#dbeafe;color:#1d4ed8">Design</span>
+    </div>
+    <div class="kanban-card">
+      <p>Fix login bug</p>
+      <span class="kanban-tag" style="background:#fee2e2;color:#b91c1c">Bug</span>
+    </div>
+  </div>
+  <div>
+    <div class="kanban-col-header">
+      <div class="kanban-dot" style="background:#5A6170"></div>
+      <span class="kanban-title">In corso</span>
+    </div>
+    <div class="kanban-card">
+      <p>API endpoints</p>
+      <span class="kanban-tag" style="background:#ede9fe;color:#6d28d9">Dev</span>
+    </div>
+  </div>
+  <div>
+    <div class="kanban-col-header">
+      <div class="kanban-dot" style="background:#1A1F27"></div>
+      <span class="kanban-title">Completato</span>
+    </div>
+    <div class="kanban-card">
+      <p>Setup CI/CD</p>
+      <span class="kanban-tag" style="background:#dcfce7;color:#15803d">DevOps</span>
+    </div>
+  </div>
+</div>`,
+      vue: `<template>
+  <div class="grid grid-cols-3 gap-3">
+    <div v-for="col in columns" :key="col.title">
+      <div class="flex items-center gap-2 mb-3">
+        <div class="w-2 h-2 rounded-full" :style="{ background: col.color }" />
+        <span class="text-xs font-semibold">{{ col.title }}</span>
+      </div>
+      <div v-for="(card, i) in col.cards" :key="i" class="bg-white border border-gray-200 rounded-lg p-3 mb-2 cursor-grab hover:shadow-sm">
+        <p class="text-xs mb-1.5">{{ card.text }}</p>
+        <span class="text-[9px] font-medium px-1.5 py-0.5 rounded" :style="{ background: card.tagBg, color: card.tagColor }">{{ card.tag }}</span>
+      </div>
+    </div>
+  </div>
+</template>`,
+      react: `interface Card { text: string; tag: string; tagBg: string; tagColor: string }
+interface Column { title: string; color: string; cards: Card[] }
+
+export function KanbanBoard({ columns }: { columns: Column[] }) {
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem' }}>
+      {columns.map(col => (
+        <div key={col.title}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+            <div style={{ width: 8, height: 8, borderRadius: '50%', background: col.color }} />
+            <span style={{ fontSize: '0.7rem', fontWeight: 600 }}>{col.title}</span>
+          </div>
+          {col.cards.map((card, i) => (
+            <div key={i} style={{ background: '#fff', border: '1px solid #E0E2E4', borderRadius: 8, padding: '0.75rem', marginBottom: '0.5rem', cursor: 'grab' }}>
+              <p style={{ fontSize: '0.75rem', margin: '0 0 0.5rem' }}>{card.text}</p>
+              <span style={{ fontSize: '0.6rem', fontWeight: 500, padding: '0.1rem 0.4rem', borderRadius: 4, background: card.tagBg, color: card.tagColor }}>{card.tag}</span>
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  )
+}`,
+    },
+  },
+  {
+    name: 'Chat Bubble',
+    slug: 'chat-bubble',
+    category: 'Feedback',
+    description: 'Bolle di chat con avatar, timestamp e indicatore di digitazione.',
+    platforms: ['HTML', 'Vue', 'React'],
+    props: [
+      { name: 'messages', type: 'Message[]', default: '[]', description: 'Array di messaggi con testo, autore, timestamp' },
+      { name: 'align', type: "'left' | 'right'", default: "'left'", description: 'Allineamento del messaggio' },
+    ],
+    code: {
+      html: `<style>
+.chat { display: flex; flex-direction: column; gap: 0.75rem; max-width: 320px; font-family: system-ui; }
+.chat-row { display: flex; align-items: flex-start; gap: 0.5rem; }
+.chat-row.sent { flex-direction: row-reverse; }
+.chat-avatar { width: 28px; height: 28px; border-radius: 50%; background: #1A1F27; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 600; flex-shrink: 0; }
+.chat-bubble { padding: 0.6rem 0.85rem; border-radius: 1rem; font-size: 0.75rem; line-height: 1.5; max-width: 250px; }
+.chat-bubble.received { background: #fff; border: 1px solid #E0E2E4; border-top-left-radius: 0.25rem; color: #1A1F27; }
+.chat-bubble.sent { background: #1A1F27; color: #fff; border-top-right-radius: 0.25rem; }
+.chat-time { font-size: 0.55rem; color: #9CA3AF; margin-top: 0.2rem; }
+</style>
+
+<div class="chat">
+  <div class="chat-row">
+    <div class="chat-avatar">MR</div>
+    <div>
+      <div class="chat-bubble received">Ciao! Ho visto il nuovo design.</div>
+      <div class="chat-time">10:32</div>
+    </div>
+  </div>
+  <div class="chat-row sent">
+    <div class="chat-avatar">Tu</div>
+    <div style="text-align:right">
+      <div class="chat-bubble sent">Grazie! Finisco entro venerdì.</div>
+      <div class="chat-time">10:34</div>
+    </div>
+  </div>
+</div>`,
+      vue: `<script setup lang="ts">
+interface Message {
+  text: string
+  sender: string
+  time: string
+  isMine?: boolean
+}
+
+defineProps<{ messages: Message[] }>()
+<\/script>
+
+<template>
+  <div class="flex flex-col gap-3 max-w-sm">
+    <div v-for="(msg, i) in messages" :key="i" class="flex items-start gap-2" :class="msg.isMine ? 'flex-row-reverse' : ''">
+      <div class="w-7 h-7 rounded-full bg-gray-900 text-white flex items-center justify-center text-[10px] font-semibold shrink-0">{{ msg.sender }}</div>
+      <div>
+        <div class="px-3.5 py-2 rounded-2xl text-xs leading-relaxed" :class="msg.isMine ? 'bg-gray-900 text-white rounded-tr-sm' : 'bg-white border border-gray-200 rounded-tl-sm'">{{ msg.text }}</div>
+        <span class="text-[9px] text-gray-400 mt-0.5 block" :class="msg.isMine ? 'text-right' : ''">{{ msg.time }}</span>
+      </div>
+    </div>
+  </div>
+</template>`,
+      react: `interface Message { text: string; sender: string; time: string; isMine?: boolean }
+
+export function ChatBubble({ messages }: { messages: Message[] }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxWidth: 320 }}>
+      {messages.map((msg, i) => (
+        <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', flexDirection: msg.isMine ? 'row-reverse' : 'row' }}>
+          <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#1A1F27', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6rem', fontWeight: 600, flexShrink: 0 }}>{msg.sender}</div>
+          <div style={{ textAlign: msg.isMine ? 'right' : 'left' }}>
+            <div style={{ padding: '0.6rem 0.85rem', borderRadius: '1rem', fontSize: '0.75rem', lineHeight: 1.5, ...(msg.isMine ? { background: '#1A1F27', color: '#fff', borderTopRightRadius: '0.25rem' } : { background: '#fff', border: '1px solid #E0E2E4', borderTopLeftRadius: '0.25rem' }) }}>{msg.text}</div>
+            <div style={{ fontSize: '0.55rem', color: '#9CA3AF', marginTop: '0.2rem' }}>{msg.time}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}`,
+    },
+  },
+  {
+    name: 'Empty State',
+    slug: 'empty-state',
+    category: 'Feedback',
+    description: 'Stato vuoto con icona, messaggio e call-to-action.',
+    platforms: ['HTML', 'Vue', 'React'],
+    props: [
+      { name: 'title', type: 'string', default: "'Nessun elemento'", description: 'Titolo dello stato vuoto' },
+      { name: 'description', type: 'string', default: "''", description: 'Descrizione aggiuntiva' },
+      { name: 'action', type: 'string', default: "''", description: 'Testo del bottone CTA' },
+    ],
+    code: {
+      html: `<style>
+.empty-state { text-align: center; padding: 2.5rem 1.5rem; max-width: 280px; }
+.empty-icon { width: 64px; height: 64px; border-radius: 1rem; background: #F2F3EF; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; }
+.empty-icon svg { width: 32px; height: 32px; color: #9CA3AF; }
+.empty-title { font-size: 0.875rem; font-weight: 600; color: #1A1F27; margin-bottom: 0.25rem; }
+.empty-desc { font-size: 0.75rem; color: #5A6170; line-height: 1.5; margin-bottom: 1rem; }
+.empty-cta { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: #1A1F27; color: #fff; border: none; border-radius: 0.5rem; font-size: 0.75rem; font-weight: 500; cursor: pointer; }
+</style>
+
+<div class="empty-state">
+  <div class="empty-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m6 4.125l2.25 2.25m0 0l2.25 2.25M12 13.875l2.25-2.25M12 13.875l-2.25 2.25M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/></svg>
+  </div>
+  <div class="empty-title">Nessun elemento</div>
+  <div class="empty-desc">Non hai ancora creato nessun progetto.</div>
+  <button class="empty-cta">+ Crea progetto</button>
+</div>`,
+      vue: `<script setup lang="ts">
+defineProps<{
+  title?: string
+  description?: string
+  action?: string
+}>()
+
+defineEmits<{ action: [] }>()
+<\/script>
+
+<template>
+  <div class="flex flex-col items-center text-center py-8 max-w-xs mx-auto">
+    <div class="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
+      <slot name="icon">
+        <svg class="w-8 h-8 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m6 4.125l2.25 2.25m0 0l2.25 2.25M12 13.875l2.25-2.25M12 13.875l-2.25 2.25M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/></svg>
+      </slot>
+    </div>
+    <h3 class="text-sm font-semibold text-gray-900 mb-1">{{ title || 'Nessun elemento' }}</h3>
+    <p v-if="description" class="text-xs text-gray-500 leading-relaxed mb-4">{{ description }}</p>
+    <button v-if="action" class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-medium bg-gray-900 text-white rounded-lg" @click="\$emit('action')">{{ action }}</button>
+  </div>
+</template>`,
+      react: `interface EmptyStateProps {
+  title?: string
+  description?: string
+  action?: string
+  onAction?: () => void
+}
+
+export function EmptyState({ title = 'Nessun elemento', description, action, onAction }: EmptyStateProps) {
+  return (
+    <div style={{ textAlign: 'center', padding: '2rem 1.5rem', maxWidth: 280, margin: '0 auto' }}>
+      <div style={{ width: 64, height: 64, borderRadius: 16, background: '#F2F3EF', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m6 4.125l2.25 2.25m0 0l2.25 2.25M12 13.875l2.25-2.25M12 13.875l-2.25 2.25M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/></svg>
+      </div>
+      <div style={{ fontSize: '0.875rem', fontWeight: 600, color: '#1A1F27', marginBottom: '0.25rem' }}>{title}</div>
+      {description && <div style={{ fontSize: '0.75rem', color: '#5A6170', lineHeight: 1.5, marginBottom: '1rem' }}>{description}</div>}
+      {action && <button onClick={onAction} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', background: '#1A1F27', color: '#fff', border: 'none', borderRadius: 8, fontSize: '0.75rem', fontWeight: 500, cursor: 'pointer' }}>{action}</button>}
+    </div>
+  )
+}`,
+    },
+  },
+  {
+    name: 'Notification Feed',
+    slug: 'notification-feed',
+    category: 'Feedback',
+    description: 'Feed di notifiche con icone, badge non letti e timestamp.',
+    platforms: ['HTML', 'Vue', 'React'],
+    props: [
+      { name: 'notifications', type: 'Notification[]', default: '[]', description: 'Array di notifiche con attore, azione, tempo, tipo' },
+      { name: 'maxVisible', type: 'number', default: '5', description: 'Numero massimo di notifiche visibili' },
+    ],
+    code: {
+      html: `<style>
+.notif-feed { max-width: 320px; }
+.notif-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+.notif-title { font-size: 0.875rem; font-weight: 600; color: #1A1F27; }
+.notif-badge { font-size: 0.625rem; font-weight: 500; color: #5A6170; background: #F2F3EF; padding: 0.125rem 0.5rem; border-radius: 999px; }
+.notif-item { display: flex; align-items: flex-start; gap: 0.625rem; padding: 0.625rem; border-radius: 0.75rem; }
+.notif-item.unread { background: #F2F3EF; }
+.notif-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.notif-text { font-size: 0.75rem; color: #1A1F27; }
+.notif-text strong { font-weight: 600; }
+.notif-time { font-size: 0.625rem; color: #9CA3AF; margin-top: 0.125rem; }
+.notif-dot { width: 8px; height: 8px; border-radius: 50%; background: #3B82F6; flex-shrink: 0; margin-top: 6px; }
+.notif-footer { text-align: center; font-size: 0.6875rem; font-weight: 500; color: #5A6170; padding: 0.5rem; margin-top: 0.5rem; cursor: pointer; }
+</style>
+
+<div class="notif-feed">
+  <div class="notif-header">
+    <span class="notif-title">Notifiche</span>
+    <span class="notif-badge">3 nuove</span>
+  </div>
+  <div class="notif-item unread">
+    <div class="notif-icon" style="background:#EFF6FF"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 0 1 .865-.501 48.172 48.172 0 0 0 3.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z"/></svg></div>
+    <div style="flex:1"><p class="notif-text"><strong>Marco R.</strong> ha commentato il tuo progetto</p><span class="notif-time">2 min fa</span></div>
+    <div class="notif-dot"></div>
+  </div>
+  <div class="notif-item unread">
+    <div class="notif-icon" style="background:#F5F3FF"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z"/></svg></div>
+    <div style="flex:1"><p class="notif-text"><strong>Sara L.</strong> ti ha invitato nel team Design</p><span class="notif-time">15 min fa</span></div>
+    <div class="notif-dot"></div>
+  </div>
+  <div class="notif-item">
+    <div class="notif-icon" style="background:#F2F3EF"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6.633 10.25c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 0 1 2.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 0 0 .322-1.672V3a.75.75 0 0 1 .75-.75 2.25 2.25 0 0 1 2.25 2.25c0 1.152-.26 2.243-.723 3.218-.266.558.107 1.282.725 1.282m0 0h3.126c1.026 0 1.945.694 2.054 1.715.045.422.068.85.068 1.285a11.95 11.95 0 0 1-2.649 7.521c-.388.482-.987.729-1.605.729H13.48c-.483 0-.964-.078-1.423-.23l-3.114-1.04a4.501 4.501 0 0 0-1.423-.23H5.904m10.598-9.75H14.25M5.904 18.5c.083.205.173.405.27.602.197.4-.078.898-.523.898h-.908c-.889 0-1.713-.518-1.972-1.368a12 12 0 0 1-.521-3.507c0-1.553.295-3.036.831-4.398C3.387 9.953 4.167 9.5 5 9.5h1.053c.472 0 .745.556.5.96a8.958 8.958 0 0 0-1.302 4.665c0 1.194.232 2.333.654 3.375Z"/></svg></div>
+    <div style="flex:1"><p class="notif-text"><strong>Luca B.</strong> ha approvato la pull request #42</p><span class="notif-time">Ieri</span></div>
+  </div>
+  <div class="notif-footer">Vedi tutte le notifiche</div>
+</div>`,
+      vue: `<script setup lang="ts">
+defineProps<{
+  notifications?: { actor: string; action: string; time: string; unread: boolean; icon: string; iconBg: string; iconColor: string }[]
+  maxVisible?: number
+}>()
+<\/script>
+
+<template>
+  <div class="w-full max-w-xs">
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="text-sm font-semibold text-ink">Notifiche</h3>
+      <span class="text-[10px] font-medium text-ink-muted bg-surface px-2 py-0.5 rounded-full">3 nuove</span>
+    </div>
+    <div class="flex flex-col gap-1">
+      <div
+        v-for="(item, i) in notifications"
+        :key="i"
+        class="flex items-start gap-2.5 p-2.5 rounded-xl transition-colors"
+        :class="item.unread ? 'bg-surface' : ''"
+      >
+        <div class="size-8 rounded-lg flex items-center justify-center shrink-0" :class="item.iconBg">
+          <svg class="size-4" :class="item.iconColor" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" :d="item.icon" />
+          </svg>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-xs text-ink"><span class="font-semibold">{{ item.actor }}</span> {{ item.action }}</p>
+          <span class="text-[10px] text-ink-faint mt-0.5 block">{{ item.time }}</span>
+        </div>
+        <div v-if="item.unread" class="size-2 rounded-full bg-blue-500 shrink-0 mt-1.5" />
+      </div>
+    </div>
+    <button class="w-full text-center text-[11px] font-medium text-ink-muted hover:text-ink mt-2 py-2 transition-colors cursor-pointer">
+      Vedi tutte le notifiche
+    </button>
+  </div>
+</template>`,
+      react: `import { type FC } from 'react'
+
+interface Notification {
+  actor: string
+  action: string
+  time: string
+  unread: boolean
+  icon: string
+  iconBg: string
+  iconColor: string
+}
+
+export const NotificationFeed: FC<{ notifications: Notification[] }> = ({ notifications }) => {
+  const unreadCount = notifications.filter(n => n.unread).length
+  return (
+    <div style={{ maxWidth: 320 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+        <h3 style={{ fontSize: '0.875rem', fontWeight: 600, color: '#1A1F27' }}>Notifiche</h3>
+        <span style={{ fontSize: '0.625rem', fontWeight: 500, color: '#5A6170', background: '#F2F3EF', padding: '0.125rem 0.5rem', borderRadius: 999 }}>{unreadCount} nuove</span>
+      </div>
+      {notifications.map((item, i) => (
+        <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.625rem', padding: '0.625rem', borderRadius: '0.75rem', background: item.unread ? '#F2F3EF' : 'transparent' }}>
+          <div style={{ width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: item.iconBg }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={item.iconColor} strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
+            </svg>
+          </div>
+          <div style={{ flex: 1 }}>
+            <p style={{ fontSize: '0.75rem', color: '#1A1F27' }}><strong>{item.actor}</strong> {item.action}</p>
+            <span style={{ fontSize: '0.625rem', color: '#9CA3AF', marginTop: 2, display: 'block' }}>{item.time}</span>
+          </div>
+          {item.unread && <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#3B82F6', flexShrink: 0, marginTop: 6 }} />}
+        </div>
+      ))}
+      <div style={{ textAlign: 'center', fontSize: '0.6875rem', fontWeight: 500, color: '#5A6170', padding: '0.5rem', marginTop: '0.5rem', cursor: 'pointer' }}>Vedi tutte le notifiche</div>
+    </div>
+  )
+}`,
+    },
+  },
 ]
 
 export function useComponents() {
